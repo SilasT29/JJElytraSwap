@@ -1,44 +1,22 @@
 package io.github.jumperonjava.jjelytraswap;
 
-//? if >= 26.3 {
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-//? } else {
-/*import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
-*///?}
 
 //THIS CLASS IS UNUSED
 
 public class ConfigScreen extends Screen {
 
     public ConfigScreen(Screen parent) {
-        //? if >= 26.3 {
         super(Component.empty());
-        //? } else {
-        /*super(Text.empty());
-         *///?}
     }
 
-    //? if >= 26.3 {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         super.extractRenderState(graphics, mouseX, mouseY, delta);
         graphics.text(font, "Hello, world", width / 2, height / 2, 0xFFFFFFFF);
     }
-    //? } else {
-    /*@Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(client.textRenderer,
-                "Hello, world",
-                width / 2,
-                height / 2,
-                0xFFFFFFFF);
-    }
-    *///?}
 
     public static ConfigScreen createConfigScreen(Screen parent) {
         return new ConfigScreen(parent);

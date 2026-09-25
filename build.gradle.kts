@@ -1,5 +1,7 @@
 import me.modmuss50.mpp.ReleaseType
 import java.util.*
+import java.util.jar.JarOutputStream
+import java.util.jar.JarEntry
 
 plugins {
     id("dev.architectury.loom")
@@ -10,6 +12,21 @@ plugins {
 
 val minecraft = stonecutter.current.version
 val loader = loom.platform.get().name.lowercase()
+
+// MC 26.x is unobfuscated (no yarn/mojmap published). Loom still requires
+// *something* in the mappings configuration ("Configuration 'mappings' has
+// no dependencies"), so we synthesize an empty tiny-mappings jar
+// (official -> named identity) once per version.
+val isUnobfuscated = minecraft.startsWith("26.")
+val stubMappingsFile = layout.buildDirectory.file("stub-mappings.jar").get().asFile
+if (isUnobfuscated && !stubMappingsFile.exists()) {
+    stubMappingsFile.parentFile.mkdirs()
+    JarOutputStream(stubMappingsFile.outputStream()).use { jos ->
+        jos.putNextEntry(JarEntry("mappings/mappings.tiny"))
+        jos.write("tiny\t2\t0\tofficial\tnamed\n".toByteArray())
+        jos.closeEntry()
+    }
+}
 
 version = "${mod.version}+$minecraft"
 group = mod.group
@@ -35,11 +52,19 @@ dependencies {
     minecraft("com.mojang:minecraft:$minecraft")
 
 
-    modCompileOnly("maven.modrinth:elytra-recast:${mod.dep("elytra_recast")}")
+    // elytra-recast is only relevant in the yarn-mappings era (< 26.3)
+    if (stonecutter.eval(minecraft, "<26.3")) {
+        modCompileOnly("maven.modrinth:elytra-recast:${mod.dep("elytra_recast")}")
+    }
 
     if (loader == "fabric") {
         modImplementation("net.fabricmc:fabric-loader:${mod.dep("fabric_loader")}")
-        mappings("net.fabricmc:yarn:$minecraft+build.${mod.dep("yarn_build")}:v2")
+        // Minecraft 26.x is unobfuscated: loom runs without mappings (identity stub).
+        if (isUnobfuscated) {
+            mappings(files(stubMappingsFile))
+        } else {
+            mappings("net.fabricmc:yarn:$minecraft+build.${mod.dep("yarn_build")}:v2")
+        }
         modCompileOnly("com.terraformersmc:modmenu:${mod.dep("modmenu_version")}")
 
         //some features (like automatic resource loading from non vanilla namespaces) work only with fabric API installed
@@ -59,16 +84,24 @@ dependencies {
     }
     if (loader == "neoforge") {
         "neoForge"("net.neoforged:neoforge:${mod.dep("neoforge_loader")}")
-        mappings(loom.layered {
-            mappings("net.fabricmc:yarn:$minecraft+build.${mod.dep("yarn_build")}:v2")
-            mod.dep("neoforge_patch").takeUnless { it.startsWith('[') }?.let {
-                mappings("dev.architectury:yarn-mappings-patch-neoforge:$it")
-            }
-        })
+        if (isUnobfuscated) {
+            mappings(files(stubMappingsFile))
+        } else {
+            mappings(loom.layered {
+                mappings("net.fabricmc:yarn:$minecraft+build.${mod.dep("yarn_build")}:v2")
+                mod.dep("neoforge_patch").takeUnless { it.startsWith('[') }?.let {
+                    mappings("dev.architectury:yarn-mappings-patch-neoforge:$it")
+                }
+            })
+        }
     }
 }
 
 loom {
+    // MC 26.x is unobfuscated: loom runs without intermediary mappings
+    if (isUnobfuscated) {
+        noIntermediateMappings()
+    }
     accessWidenerPath = rootProject.file("src/main/resources/jjelytraswap.accesswidener")
 
     decompilers {
@@ -129,7 +162,11 @@ publishMods {
 
 java {
     withSourcesJar()
-    val java = if (stonecutter.eval(minecraft, ">=1.20.5")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
+    val java = when {
+        stonecutter.eval(minecraft, ">=26.3") -> JavaVersion.VERSION_25
+        stonecutter.eval(minecraft, ">=1.20.5") -> JavaVersion.VERSION_21
+        else -> JavaVersion.VERSION_17
+    }
     targetCompatibility = java
     sourceCompatibility = java
 }

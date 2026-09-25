@@ -1,0 +1,56 @@
+// JJElytraSwap — Minecraft 26.3 NeoForge (unobfuscated Minecraft, loom-no-remap)
+// Kept outside the stonecutter tree: the loom-no-remap plugin cannot coexist with
+// regular loom in one Kotlin-DSL script. Sources are extracted from the shared
+// src/ tree by tools/extract_variant.py at configure time (root build.gradle.kts).
+
+plugins {
+    id 'dev.architectury.loom-no-remap' version '1.17.493'
+    id 'architectury-plugin' version '3.5.168'
+}
+
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+version = "${project.findProperty('mod.version')}+26.3"
+group = project.findProperty('mod.group')
+
+base {
+    archivesName = "${project.findProperty('mod.id')}-neoforge"
+}
+
+repositories {
+    maven { url = 'https://maven.neoforged.net/releases/' }
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+dependencies {
+    minecraft "net.minecraft:minecraft:26.3"
+    neoForge "net.neoforged:neoforge:${project.findProperty('deps.neoforge_loader')}"
+}
+
+// The bundled access widener is header-only (no entries); nothing to inject.
+
+tasks.processResources {
+    def props = [
+        id: project.findProperty('mod.id'),
+        name: project.findProperty('mod.name'),
+        version: project.findProperty('mod.version'),
+        minecraft: project.findProperty('mod.mc_dep_forgelike')
+    ]
+    inputs.properties(props)
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand props
+    }
+}
+
+// The plain jar is the release artifact (no remapping on unobfuscated Minecraft).
+tasks.jar {
+    archiveClassifier = ''
+}

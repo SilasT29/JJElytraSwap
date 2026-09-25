@@ -1,6 +1,5 @@
 package io.github.jumperonjava.jjelytraswap;
 
-//? if >= 26.3 {
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -18,33 +17,10 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.inventory.ContainerInput;
-//? } else {
-/*import me.lunaluna.fabric.elytrarecast.config.ElytraRecastConfig;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Unit;
-*///?}
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -68,71 +44,33 @@ public class JJElytraSwapInit
 	public enum CompType { GLIDER, EQUIPPABLE, ATTRIBUTE_MODIFIERS, CUSTOM_NAME }
 
 	public static boolean stackHasComponent(ItemStack stack, CompType type) {
-		//? if >= 26.3 {
 		return stack.has(switch (type) {
 			case GLIDER -> DataComponents.GLIDER;
 			case EQUIPPABLE -> DataComponents.EQUIPPABLE;
 			case ATTRIBUTE_MODIFIERS -> DataComponents.ATTRIBUTE_MODIFIERS;
 			case CUSTOM_NAME -> DataComponents.CUSTOM_NAME;
 		});
-		//? } else if fabric || < 1.21.5 {
-		/*return stack.contains(switch (type) {
-			case GLIDER -> DataComponentTypes.GLIDER;
-			case EQUIPPABLE -> DataComponentTypes.EQUIPPABLE;
-			case ATTRIBUTE_MODIFIERS -> DataComponentTypes.ATTRIBUTE_MODIFIERS;
-			case CUSTOM_NAME -> DataComponentTypes.CUSTOM_NAME;
-		});
-		*///? } else {
-		return stack.has(switch (type) {
-			case GLIDER -> DataComponentTypes.GLIDER;
-			case EQUIPPABLE -> DataComponentTypes.EQUIPPABLE;
-			case ATTRIBUTE_MODIFIERS -> DataComponentTypes.ATTRIBUTE_MODIFIERS;
-			case CUSTOM_NAME -> DataComponentTypes.CUSTOM_NAME;
-		});
-		//?}
 	}
 
-	//? if >= 26.3 {
 	private static Minecraft getClient() {
 		return Minecraft.getInstance();
 	}
-	//? } else {
-	/*private static MinecraftClient getClient() {
-		return MinecraftClient.getInstance();
-	}
-	*///?}
 
 	private static boolean playerReady() {
-		//? if >= 26.3 {
 		return getClient().level != null && getClient().player != null;
-		//? } else {
-		/*return getClient().world != null && getClient().player != null;
-		 *///?}
 	}
 
 	private static ItemStack invStack(int slot) {
-		//? if >= 26.3 {
 		return getClient().player.getInventory().getItem(slot);
-		//? } else {
-		/*return getClient().player.getInventory().getStack(slot);
-		 *///?}
 	}
 
 	private static ItemStack chestStack() {
-		//? if >= 26.3 {
 		return getClient().player.getItemBySlot(EquipmentSlot.CHEST);
-		//? } else {
-		/*return getClient().player.getEquippedStack(EquipmentSlot.CHEST);
-		 *///?}
 	}
 
 	private static boolean playerInAir() {
 		var p = getClient().player;
-		//? if >= 26.3 {
 		return !p.onGround() || p.isInLiquid();
-		//? } else {
-		/*return !p.isOnGround() || p.isInFluid();
-		 *///?}
 	}
 
 	public static void tryWearChestplate() {
@@ -158,17 +96,6 @@ public class JJElytraSwapInit
 				).collect(Collectors.toCollection(ArrayList::new));
 		Collections.reverse(chestplateSlots);
 
-		//? if fabric && < 26.3 {
-		/*if(PLATFORM.isModLoaded("elytra-recast")){
-			try {
-				if(getClient().options.jumpKey.isPressed() && elytraRecastEnabled())
-					return;
-			}
-			catch (Exception ignored){
-				ignored.printStackTrace();
-			}
-		}
-		*///?}
 
 //		if(stackHasComponent(chestStack(),CompType.GLIDER))
 //			return;
@@ -179,11 +106,6 @@ public class JJElytraSwapInit
 		}
 	}
 
-	//? if < 26.3 {
-	/*private static boolean elytraRecastEnabled() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-		return ElytraRecastConfig.enabled && ElytraRecastConfig.jumpEnabled;
-	}
-	*///?}
 
 	public static void tryWearElytra() {
 		if (!playerReady()) {
@@ -228,7 +150,6 @@ public class JJElytraSwapInit
 		return chestplateSlots;
 	}
 
-	//? if >= 26.3 {
 	private static Registry<Enchantment> getEnchantmentRegistry() {
 		return getClient().level.registryAccess()
 		.lookupOrThrow(Registries.ENCHANTMENT);
@@ -239,18 +160,6 @@ public class JJElytraSwapInit
 				.getOrThrow(key);
 		return EnchantmentHelper.getItemEnchantmentLevel(enchantEntry, stack);
 	}
-	//? } else {
-	/*private static Registry<Enchantment> getEnchantmentRegistry() {
-        return getClient().world.getRegistryManager()
-        .getOrThrow(RegistryKeys.ENCHANTMENT);
-	}
-
-	private static int getLevel(RegistryKey<Enchantment> key, ItemStack stack) {
-        var enchant = getEnchantmentRegistry().get(key);
-		RegistryEntry<Enchantment> enchantEntry = getEnchantmentRegistry().getEntry(enchant);
-		return EnchantmentHelper.getLevel(enchantEntry,stack);
-	}
-	*///?}
 
 	private static int getElytraStat(ItemStack elytraItem) {
 		var stat = (getLevel(Enchantments.MENDING,elytraItem)*3+1)+getLevel(Enchantments.UNBREAKING,elytraItem);
@@ -264,7 +173,6 @@ public class JJElytraSwapInit
 		if(stackHasComponent(chestplateItem,CompType.EQUIPPABLE)){
 			if(chestplateItem.get(DataComponentsOrTypes.EQUIPPABLE).slot()==EquipmentSlot.CHEST){
 				var component = chestplateItem.get(DataComponentsOrTypes.ATTRIBUTE_MODIFIERS);
-				//? if >= 26.3 {
 				for (ItemAttributeModifiers.Entry entry : component.modifiers()) {
 					Holder<Attribute> attribute = entry.attribute();
 					if(attribute == Attributes.ARMOR) {
@@ -274,17 +182,6 @@ public class JJElytraSwapInit
 						score += entry.modifier().amount();
 					}
 				}
-				//? } else {
-				/*for (AttributeModifiersComponent.Entry entry : component.modifiers()) {
-					RegistryEntry<EntityAttribute> attribute = entry.attribute();
-					if(attribute == EntityAttributes.ARMOR) {
-						score += entry.modifier().value();
-					}
-					if(attribute == EntityAttributes.ARMOR_TOUGHNESS) {
-						score += entry.modifier().value();
-					}
-				}
-				*///?}
 				score += getLevel(Enchantments.PROTECTION,chestplateItem)*2;
 				score += getLevel(Enchantments.MENDING,chestplateItem)*0.5;
 				score += stackHasComponent(chestplateItem,CompType.CUSTOM_NAME)?0.25:0;
@@ -298,21 +195,9 @@ public class JJElytraSwapInit
 	private static void wearElytra(int slotId) {
 		swap(slotId);
 		try {
-			//? if fabric && < 26.3 {
-			/*MinecraftClient.getInstance().getNetworkHandler().sendPacket(new ClientCommandC2SPacket(MinecraftClient.getInstance().player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
-			*///?}
-			//? if neoforge && < 26.3 {
-			MinecraftClient.getInstance().getNetworkHandler().send(new ClientCommandC2SPacket(MinecraftClient.getInstance().player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
-			//?}
-			//? if >= 26.3 {
 			getClient().getConnection().send(new ServerboundPlayerCommandPacket(getClient().player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
-			//?}
 
-			//? if >= 26.3 {
 			getClient().player.tryToStartFallFlying();
-			//? } else {
-			/*MinecraftClient.getInstance().player.startGliding();
-			 *///?}
 		} catch (NullPointerException ex) {
 			ex.printStackTrace();
 		}
@@ -325,17 +210,10 @@ public class JJElytraSwapInit
 		if (slot2 < 9) slot2 += 36;
 
 		try {
-			//? if >= 26.3 {
 			var player = getClient().player;
 			getClient().gameMode.handleContainerInput(0, slot2, 0, ContainerInput.PICKUP, player);
 			getClient().gameMode.handleContainerInput(0, 6, 0, ContainerInput.PICKUP, player);
 			getClient().gameMode.handleContainerInput(0, slot2, 0, ContainerInput.PICKUP, player);
-			//? } else {
-			/*var player = getClient().player;
-			getClient().interactionManager.clickSlot(0, slot2, 0, SlotActionType.PICKUP, player);
-			getClient().interactionManager.clickSlot(0, 6, 0, SlotActionType.PICKUP, player);
-			getClient().interactionManager.clickSlot(0, slot2, 0, SlotActionType.PICKUP, player);
-			*///?}
 		} catch (NullPointerException ex) {
 			ex.printStackTrace();
 		}
@@ -388,31 +266,17 @@ public class JJElytraSwapInit
 	}
 
 	private static void sendToggleMessage(boolean on) {
-		//? if >= 26.3 {
 		var player = getClient().player;
 		if (player != null) {
 			player.sendSystemMessage(Component.translatable("jjelytraswap." + (on ? "enabled" : "disabled")));
 		}
-		//? } else {
-		/*var client = MinecraftClient.getInstance();
-		if (client.player != null) {
-			client.inGameHud.getChatHud().addMessage(Text.translatable("jjelytraswap." + (on ? "enabled" : "disabled")));
-		}
-		*///?}
 	}
 
 	/** Static access to the component types, resolved per mapping generation. */
 	static final class DataComponentsOrTypes {
-		//? if >= 26.3 {
 		static final net.minecraft.core.component.DataComponentType<net.minecraft.util.Unit> GLIDER = DataComponents.GLIDER;
 		static final net.minecraft.core.component.DataComponentType<net.minecraft.world.item.equipment.Equippable> EQUIPPABLE = DataComponents.EQUIPPABLE;
 		static final net.minecraft.core.component.DataComponentType<net.minecraft.world.item.component.ItemAttributeModifiers> ATTRIBUTE_MODIFIERS = DataComponents.ATTRIBUTE_MODIFIERS;
 		static final net.minecraft.core.component.DataComponentType<net.minecraft.network.chat.Component> CUSTOM_NAME = DataComponents.CUSTOM_NAME;
-		//? } else {
-		/*static final ComponentType<Unit> GLIDER = DataComponentTypes.GLIDER;
-		static final ComponentType<net.minecraft.component.type.EquippableComponent> EQUIPPABLE = DataComponentTypes.EQUIPPABLE;
-		static final ComponentType<AttributeModifiersComponent> ATTRIBUTE_MODIFIERS = DataComponentTypes.ATTRIBUTE_MODIFIERS;
-		static final ComponentType<Text> CUSTOM_NAME = DataComponentTypes.CUSTOM_NAME;
-		*///?}
 	}
 }
