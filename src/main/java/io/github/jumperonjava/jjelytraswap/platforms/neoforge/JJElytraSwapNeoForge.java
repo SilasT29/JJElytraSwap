@@ -72,8 +72,10 @@ public class JJElytraSwapNeoForge {
         @Override
         public void registerToggleKeybind(String translationKeyName, int defaultKeyId) {
             //? if >= 26.3 {
+            // 26.3 uses SDL scancodes: negative "unbound" sentinel (-1) would crash
+            // KeyMapping.setAll() in InputConstants.isKeyDown — use scancode 0 (= UNKNOWN).
             KeyMapping.Category kbCategory = new KeyMapping.Category(Identifier.fromNamespaceAndPath("jjelytraswap","generic"));
-            toggleBind = new KeyMapping(translationKeyName,defaultKeyId,kbCategory);
+            toggleBind = new KeyMapping(translationKeyName, Math.max(defaultKeyId, 0), kbCategory);
             //? } else if >= 1.21.9 {
             /*KeyBinding.Category kbCategory = new KeyBinding.Category(Identifier.of("jjelytraswap","generic"));
             toggleBind = new KeyBinding(translationKeyName,defaultKeyId,kbCategory);

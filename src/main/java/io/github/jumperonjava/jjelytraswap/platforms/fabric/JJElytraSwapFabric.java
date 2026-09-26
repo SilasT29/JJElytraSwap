@@ -49,8 +49,11 @@ public class JJElytraSwapFabric implements ClientModInitializer {
 		@Override
 		public void registerToggleKeybind(String translationKeyName, int defaultKeyId) {
 			//? if >= 26.3 {
+			// 26.3 uses SDL: key codes are scancodes polled against the SDL key-state buffer,
+			// which must not be negative. GLFW's unbound sentinel -1 would crash setAll() with
+			// IndexOutOfBoundsException in InputConstants.isKeyDown — use scancode 0 (= UNKNOWN).
 			KeyMapping.Category kbCategory = new KeyMapping.Category(Identifier.fromNamespaceAndPath("jjelytraswap","generic"));
-			toggleBind = new KeyMapping(translationKeyName,defaultKeyId,kbCategory);
+			toggleBind = new KeyMapping(translationKeyName, Math.max(defaultKeyId, 0), kbCategory);
 			KeyMappingHelper.registerKeyMapping(toggleBind);
 			//? } else if >= 1.21.9 {
 			/*KeyBinding.Category kbCategory = new KeyBinding.Category(Identifier.of("jjelytraswap","generic"));
